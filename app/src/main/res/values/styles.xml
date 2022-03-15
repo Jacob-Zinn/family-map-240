@@ -2,5 +2,6 @@
 <resources>
     <style name="AppTextField" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <item name="boxBackgroundColor">@android:color/white</item>
+        <item name="android:textColor">@color/blue_navy</item>
     </style>
 </resources>
