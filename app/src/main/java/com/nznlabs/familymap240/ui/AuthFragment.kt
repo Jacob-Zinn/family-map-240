@@ -6,6 +6,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
+import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.nznlabs.familymap240.R
 import com.nznlabs.familymap240.databinding.FragmentAuthBinding
@@ -45,9 +46,9 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(),
         binding.serverPortInputTxt.setText("8080")
         binding.usernameInputTxt.setText("JacobZinn")
         binding.passwordInputTxt.setText("FamilyMapPass")
+        binding.emailInputTxt.setText("Jacobpzinn@gmail.com")
         binding.firstNameInputTxt.setText("Jacob")
         binding.lastNameInputTxt.setText("Zinn")
-        binding.emailInputTxt.setText("Jacobpzinn@gmail.com")
     }
 
     private fun initListeners() {
@@ -67,7 +68,7 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(),
 
         sessionManager.authToken.observe(viewLifecycleOwner) {
             try {
-                findNavController().navigate(R.id.action_authFragment_to_mapFragment)
+                findNavController().navigate(AuthFragmentDirections.actionAuthFragmentToMapFragment())
             } catch (e: NullPointerException) {
                 Timber.e(e, "ERROR: Failed to navigate to map fragment")
             }

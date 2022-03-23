@@ -1,13 +1,9 @@
 package com.nznlabs.familymap240.repository
 
 import com.google.gson.Gson
-import com.nznlabs.familymap240.session.SessionManager
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import requests.LoginRequest
 import requests.RegisterRequest
-import results.LoginResult
-import results.RegisterResult
+import results.*
 import timber.log.Timber
 import util.IO.readString
 import util.IO.writeString
@@ -17,13 +13,11 @@ import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-class ServerProxy : KoinComponent {
-
-    private val sessionManager: SessionManager by inject()
-    private val gson: Gson by inject()
-
+class ServerProxy {
     lateinit var serverHost: String
     lateinit var serverPort: String
+
+    private val gson: Gson = Gson()
 
     fun login(request: LoginRequest): LoginResult {
         var loginResult: LoginResult
@@ -32,7 +26,6 @@ class ServerProxy : KoinComponent {
         try {
             http.requestMethod = "POST"
             http.doOutput = true
-//            http.addRequestProperty("Authorization", "afj232hj2332")
             http.addRequestProperty("Accept", "application/json")
             http.connect()
 
@@ -44,13 +37,11 @@ class ServerProxy : KoinComponent {
             if (http.responseCode == HttpURLConnection.HTTP_OK) {
                 val respBody: InputStream = http.inputStream
                 val respData: String = readString(respBody)
-                Timber.d("login response: $respData")
                 loginResult = gson.fromJson(respData, LoginResult::class.java)
             } else {
                 Timber.d("ERROR: " + http.responseMessage)
                 val respBody: InputStream = http.errorStream
                 val respData: String = readString(respBody)
-                Timber.d("login error response: $respData")
                 loginResult = gson.fromJson(respData, LoginResult::class.java)
             }
         } catch (e: IOException) {
@@ -69,7 +60,6 @@ class ServerProxy : KoinComponent {
         try {
             http.requestMethod = "POST"
             http.doOutput = true
-//            http.addRequestProperty("Authorization", "afj232hj2332")
             http.addRequestProperty("Accept", "application/json")
             http.connect()
 
@@ -81,13 +71,11 @@ class ServerProxy : KoinComponent {
             if (http.responseCode == HttpURLConnection.HTTP_OK) {
                 val respBody: InputStream = http.inputStream
                 val respData: String = readString(respBody)
-                Timber.d("register response: $respData")
                 registerResult = gson.fromJson(respData, RegisterResult::class.java)
             } else {
                 Timber.d("ERROR: " + http.responseMessage)
                 val respBody: InputStream = http.errorStream
                 val respData: String = readString(respBody)
-                Timber.d("register error response: $respData")
                 registerResult = gson.fromJson(respData, RegisterResult::class.java)
             }
         } catch (e: IOException) {
@@ -99,35 +87,95 @@ class ServerProxy : KoinComponent {
         return registerResult
     }
 
-//    fun getPeople(request: PeopleRe): LoginResult {
-//        try {
-//            val url = URL("http://$serverHost:$serverPort/routes/claim")
-//            val http: HttpURLConnection = url.openConnection() as HttpURLConnection
-//            http.requestMethod = "GET"
-//            http.doOutput = false
-//            http.addRequestProperty("Authorization", "afj232hj2332")
-//            http.addRequestProperty("Accept", "application/json")
-//            http.connect()
-//
-//            if (http.responseCode == HttpURLConnection.HTTP_OK) {
-//                val respBody: InputStream = http.inputStream
-//                val respData: String = readString(respBody)
-//                Timber.d(respData)
-//            } else {
-//                Timber.d("ERROR: " + http.responseMessage)
-//                val respBody: InputStream = http.errorStream
-//                val respData: String = readString(respBody)
-//                Timber.d(respData)
-//            }
-//
-//        } catch (e: IOException) {
-//            e.printStackTrace()
-//        }
-//    }
-//
-//    fun getEvents(): LoginResult {
-//
-//    }
+    fun getPersons(authToken: String): PersonsResult {
+        var personsResult: PersonsResult
+        val url = URL("http://$serverHost:$serverPort/person")
+        val http: HttpURLConnection = url.openConnection() as HttpURLConnection
+        try {
+            http.requestMethod = "GET"
+            http.doOutput = false
+            http.addRequestProperty("Authorization", authToken)
+            http.addRequestProperty("Accept", "application/json")
+            http.connect()
 
+            if (http.responseCode == HttpURLConnection.HTTP_OK) {
+                val respBody: InputStream = http.inputStream
+                val respData: String = readString(respBody)
+                personsResult = gson.fromJson(respData, PersonsResult::class.java)
+            } else {
+                Timber.d("ERROR: " + http.responseMessage)
+                val respBody: InputStream = http.errorStream
+                val respData: String = readString(respBody)
+                personsResult = gson.fromJson(respData, PersonsResult::class.java)
+            }
+            return personsResult
+        } catch (e: IOException) {
+            personsResult = PersonsResult("ERROR: Unable to retrieve user data", false)
+            e.printStackTrace()
+        } finally {
+            http.disconnect()
+        }
+        return personsResult
+    }
+
+    fun getEvents(authToken: String): EventsResult {
+        var eventsResult: EventsResult
+        val url = URL("http://$serverHost:$serverPort/event")
+        val http: HttpURLConnection = url.openConnection() as HttpURLConnection
+        try {
+            http.requestMethod = "GET"
+            http.doOutput = false
+            http.addRequestProperty("Authorization", authToken)
+            http.addRequestProperty("Accept", "application/json")
+            http.connect()
+
+            if (http.responseCode == HttpURLConnection.HTTP_OK) {
+                val respBody: InputStream = http.inputStream
+                val respData: String = readString(respBody)
+                eventsResult = gson.fromJson(respData, EventsResult::class.java)
+            } else {
+                Timber.d("ERROR: " + http.responseMessage)
+                val respBody: InputStream = http.errorStream
+                val respData: String = readString(respBody)
+                eventsResult = gson.fromJson(respData, EventsResult::class.java)
+            }
+            return eventsResult
+        } catch (e: IOException) {
+            eventsResult = EventsResult("ERROR: Unable to retrieve user data", false)
+            e.printStackTrace()
+        } finally {
+            http.disconnect()
+        }
+        return eventsResult
+    }
+
+    fun clearDB(): ClearResult{
+        var clearResult: ClearResult
+        val url = URL("http://$serverHost:$serverPort/clear")
+        val http: HttpURLConnection = url.openConnection() as HttpURLConnection
+        try {
+            http.requestMethod = "POST"
+            http.doOutput = false
+            http.addRequestProperty("Accept", "application/json")
+            http.connect()
+
+            if (http.responseCode == HttpURLConnection.HTTP_OK) {
+                val respBody: InputStream = http.inputStream
+                val respData: String = readString(respBody)
+                clearResult = gson.fromJson(respData, ClearResult::class.java)
+            } else {
+                Timber.d("ERROR: " + http.responseMessage)
+                val respBody: InputStream = http.errorStream
+                val respData: String = readString(respBody)
+                clearResult = gson.fromJson(respData, ClearResult::class.java)
+            }
+        } catch (e: IOException) {
+            clearResult = ClearResult("ERROR: Failed to clear database.", false)
+            e.printStackTrace()
+        } finally {
+            http.disconnect()
+        }
+        return clearResult
+    }
 
 }

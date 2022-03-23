@@ -2,6 +2,7 @@ package com.nznlabs.familymap240.ui
 
 import android.os.Bundle
 import android.view.View
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -31,11 +32,15 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
         binding.map.getFragment<SupportMapFragment>().getMapAsync(this)
     }
 
-//    private fun clearBackStack() {
-//        val fm: FragmentManager = requireActivity().supportFragmentManager
-//        for (i in 0 until fm.backStackEntryCount) {
-//            fm.popBackStack()
-//        }
+
+//    private fun popBackStack() {
+//        val navController = findNavController()
+//        navController.popBackStack()
+//        navController.clearBackStack()
+////        val fm: FragmentManager = requireActivity().supportFragmentManager
+////        for (i in 0 until fm.backStackEntryCount) {
+////            fm.popBackStack()
+////        }
 //    }
 
     /**
@@ -55,5 +60,7 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
         mMap.addMarker(MarkerOptions().position(us).title("Marker in middle of US"))
         mMap.moveCamera(CameraUpdateFactory.newLatLng(us))
     }
+
+
 
 }

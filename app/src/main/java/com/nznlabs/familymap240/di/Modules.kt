@@ -11,7 +11,6 @@ object Modules {
     val appModule = module {
         single { SessionManager() }
         single { ServerProxy() }
-        single { Gson() }
     }
 
     val viewModelModule = module {
