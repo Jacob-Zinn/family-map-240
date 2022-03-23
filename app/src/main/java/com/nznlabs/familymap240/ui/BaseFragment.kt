@@ -1,39 +1,43 @@
 package com.nznlabs.familymap240.ui
 
-import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.annotation.CallSuper
 import androidx.fragment.app.Fragment
-import com.nznlabs.familymap240.util.MessageCallback
-import com.nznlabs.familymap240.util.MessageType
-import com.nznlabs.familymap240.util.Response
-import com.nznlabs.familymap240.util.UIComponentType
-import timber.log.Timber
+import androidx.viewbinding.ViewBinding
 
-abstract class BaseFragment: Fragment()
-{
-    lateinit var uiCommunicationListener: UICommunicationListener
+abstract class BaseFragment<BINDING : ViewBinding> : Fragment() {
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        try{
-            uiCommunicationListener = context as UICommunicationListener
-        }catch(e: ClassCastException){
-            Timber.e(e,"$context must implement UICommunicationListener" )
-        }
+    // Use private nullable binding in order to set in onCreateView and onDestroyView
+    private var _binding: BINDING? = null
+
+    /**
+     * Wraps private nullable property. Lifecycle valid from [onCreateView] to [onDestroyView].
+     * Treat similar to [requireContext] which throws if context is null, meaning you are aware of when you can call it and should use it.
+     */
+    protected val binding: BINDING
+        get() = _binding!!
+
+    @CallSuper
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        _binding = bind()
+        return binding.root
     }
 
-    fun showInfoDialog(infoMessage: String) {
-        uiCommunicationListener.onResponseReceived(
-            response = Response(
-                message = infoMessage,
-                uiComponentType = UIComponentType.Dialog,
-                messageType = MessageType.Info
-            ),
-            messageCallback = object : MessageCallback {
-                override fun removeMessage() {
-                    // do nothing
-                }
-            }
-        )
+    @CallSuper
+    override fun onDestroyView() {
+        super.onDestroyView()
+        onDestroyView(binding)
     }
 
+    /** Override per fragment to add any further onDestroyView related cleanup. */
+    @CallSuper
+    open fun onDestroyView(binding: BINDING) {
+        // Make LeakCanary happy by nulling out binding reference here: https://stackoverflow.com/questions/57647751/android-databinding-is-leaking-memory
+        _binding = null
+    }
+
+    abstract fun bind(): BINDING
 }

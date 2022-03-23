@@ -1,40 +1,27 @@
 package com.nznlabs.familymap240.ui
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import androidx.fragment.app.viewModels
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.nznlabs.familymap240.R
 import com.nznlabs.familymap240.databinding.FragmentMapBinding
-import com.nznlabs.familymap240.viewmodel.AuthViewModel
-import dagger.hilt.android.AndroidEntryPoint
+import com.nznlabs.familymap240.viewmodel.MainViewModel
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
-@AndroidEntryPoint
-class MapFragment: BaseFragment(), OnMapReadyCallback {
 
+class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
 
 
     private lateinit var mMap: GoogleMap
+    private val mainViewModel by sharedViewModel<MainViewModel>()
 
-    val viewModel: AuthViewModel by viewModels()
 
-    private var _binding: FragmentMapBinding? = null
-    private val binding get() = _binding!!
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentMapBinding.inflate(inflater, container, false)
-        return binding.root
+    override fun bind(): FragmentMapBinding {
+        return FragmentMapBinding.inflate(layoutInflater)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -43,6 +30,13 @@ class MapFragment: BaseFragment(), OnMapReadyCallback {
         // init map
         binding.map.getFragment<SupportMapFragment>().getMapAsync(this)
     }
+
+//    private fun clearBackStack() {
+//        val fm: FragmentManager = requireActivity().supportFragmentManager
+//        for (i in 0 until fm.backStackEntryCount) {
+//            fm.popBackStack()
+//        }
+//    }
 
     /**
      * Manipulates the map once available.
@@ -62,12 +56,4 @@ class MapFragment: BaseFragment(), OnMapReadyCallback {
         mMap.moveCamera(CameraUpdateFactory.newLatLng(us))
     }
 
-
-
-
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
 }

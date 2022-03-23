@@ -12,7 +12,9 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/byu_logo"
         android:supportsRtl="true"
-        android:theme="@style/Theme.FamilyMap240">
+        android:theme="@style/Theme.FamilyMap240"
+        android:usesCleartextTraffic="true"
+        >
 
         <!--
              TODO: Before you run your application, you need a Google Maps API key.
