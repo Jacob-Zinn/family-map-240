@@ -54,6 +54,11 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
 
     private fun querySearch() {
         val search: String = binding.searchBar.text.toString().lowercase()
+        if (search.isBlank()) {
+            searchAdapter = SearchListAdapter(persons = listOf(), events = listOf(), this)
+            binding.recView.adapter = searchAdapter
+            return
+        }
         val personsResult = mutableListOf<Person>()
         val eventsResult = mutableListOf<Event>()
         viewModel.persons.value?.let { persons ->
@@ -77,6 +82,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
             events = eventsResult,
             this
         )
+        binding.recView.adapter = searchAdapter
 
     }
 

@@ -72,6 +72,7 @@ class MainViewModel : BaseViewModel() {
     private suspend fun getUserData(authToken: String, personID: String): String? {
         val personsResult = serverProxy.getPersons(authToken)
         if (!personsResult.success) {
+
             return personsResult.message
         }
         val eventsResult = serverProxy.getEvents(authToken)

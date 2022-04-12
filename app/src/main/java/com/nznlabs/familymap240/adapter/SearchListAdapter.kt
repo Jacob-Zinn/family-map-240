@@ -84,7 +84,7 @@ class SearchListAdapter(
                 holder.bind(persons[position])
             }
             is EventViewHolder -> {
-                holder.bind(events[position])
+                holder.bind(events[position - persons.size])
             }
         }
     }
