@@ -26,7 +26,6 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(),
         super.onViewCreated(view, savedInstanceState)
 
         subscribeObservers()
-        initSettings()
         initListeners()
     }
 
@@ -42,7 +41,6 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(),
         }
 
         viewModel.settings.observe(viewLifecycleOwner) {
-            Timber.d("this workszzz ")
             binding.lifeStoryLines.toggle.isChecked = it.showLifeStoryLines
             binding.treeLines.toggle.isChecked = it.showTreeLines
             binding.spouseLines.toggle.isChecked = it.showSpouseLines
@@ -51,12 +49,6 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(),
             binding.maleEvents.toggle.isChecked = it.maleEvents
             binding.femaleEvents.toggle.isChecked = it.femaleEvents
         }
-    }
-
-    private fun initSettings() {
-        val settings = viewModel.settings.value
-
-
     }
 
     private fun initListeners() {
