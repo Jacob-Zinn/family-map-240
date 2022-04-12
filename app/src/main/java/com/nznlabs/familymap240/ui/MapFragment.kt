@@ -1,6 +1,9 @@
 package com.nznlabs.familymap240.ui
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -9,15 +12,18 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.nznlabs.familymap240.R
 import com.nznlabs.familymap240.databinding.FragmentMapBinding
 import com.nznlabs.familymap240.viewmodel.MainViewModel
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import timber.log.Timber
 
 
 class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
 
 
     private lateinit var mMap: GoogleMap
+    private lateinit var menu: Menu
     private val mainViewModel by sharedViewModel<MainViewModel>()
 
 
@@ -33,15 +39,6 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
     }
 
 
-//    private fun popBackStack() {
-//        val navController = findNavController()
-//        navController.popBackStack()
-//        navController.clearBackStack()
-////        val fm: FragmentManager = requireActivity().supportFragmentManager
-////        for (i in 0 until fm.backStackEntryCount) {
-////            fm.popBackStack()
-////        }
-//    }
 
     /**
      * Manipulates the map once available.
@@ -62,5 +59,31 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
     }
 
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        this.menu = menu
+        inflater.inflate(R.menu.map_menu, this.menu)
+    }
 
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // option selected from action bar menu
+        when (item.itemId) {
+            R.id.action_settings -> {
+                try {
+                    findNavController().navigate(AuthFragmentDirections.actionAuthFragmentToMapFragment())
+                } catch (e: NullPointerException) {
+                    Timber.e(e, "ERROR: Failed to navigate to map fragment")
+                }
+            }
+            R.id.action_search -> {
+                try {
+                    findNavController().navigate(AuthFragmentDirections.actionAuthFragmentToMapFragment())
+                } catch (e: NullPointerException) {
+                    Timber.e(e, "ERROR: Failed to navigate to map fragment")
+                }
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
 }

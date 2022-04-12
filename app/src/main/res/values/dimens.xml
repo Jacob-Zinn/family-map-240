@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="outer_margin">19dp</dimen>
+    <dimen name="inner_margin">12dp</dimen>
+
+    <dimen name="divider_thickness">1dp</dimen>
+    <dimen name="header_strip_ht">11dp</dimen>
+    <dimen name="header_ht">38dp</dimen>
+
+</resources>
