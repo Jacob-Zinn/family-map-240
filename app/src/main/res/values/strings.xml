@@ -4,4 +4,6 @@
     <string name="title_activity_main">Family Map</string>
     <string name="settings">settings</string>
     <string name="search">search</string>
+    <string name="first_last">First Last</string>
+    <string name="event_info_provided_here">EVENT: Info provided here</string>
 </resources>

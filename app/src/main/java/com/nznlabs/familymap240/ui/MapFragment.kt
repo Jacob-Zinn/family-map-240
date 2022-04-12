@@ -34,6 +34,8 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setHasOptionsMenu(true)
+
         // init map
         binding.map.getFragment<SupportMapFragment>().getMapAsync(this)
     }
@@ -71,16 +73,16 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback {
         when (item.itemId) {
             R.id.action_settings -> {
                 try {
-                    findNavController().navigate(AuthFragmentDirections.actionAuthFragmentToMapFragment())
+                    findNavController().navigate(MapFragmentDirections.actionMapFragmentToSettingsFragment())
                 } catch (e: NullPointerException) {
-                    Timber.e(e, "ERROR: Failed to navigate to map fragment")
+                    Timber.e(e, "ERROR: Failed to navigate to settings fragment")
                 }
             }
             R.id.action_search -> {
                 try {
-                    findNavController().navigate(AuthFragmentDirections.actionAuthFragmentToMapFragment())
+                    findNavController().navigate(MapFragmentDirections.actionMapFragmentToSearchFragment())
                 } catch (e: NullPointerException) {
-                    Timber.e(e, "ERROR: Failed to navigate to map fragment")
+                    Timber.e(e, "ERROR: Failed to navigate to search fragment")
                 }
             }
         }
