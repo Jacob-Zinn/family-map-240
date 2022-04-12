@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import models.Person
 
-class SessionManager() {
+class SessionManager {
 
     val authToken: LiveData<String?> = MutableLiveData()
     var username: String? = null

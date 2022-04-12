@@ -6,35 +6,113 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline_left"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_begin="@dimen/outer_margin" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline_right"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_end="@dimen/outer_margin" />
-
         <include
-            android:id="@+id/lifeLines"
+            android:id="@+id/lifeStoryLines"
             layout="@layout/layout_settings_item"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:description="@{`show life story lines`}"
             app:title="@{`Show Story Lines`}" />
 
-        <!--    var showStoryLines: Boolean = true,-->
-        <!--    var showTreeLines: Boolean = true,-->
-        <!--    var showSpouseLines: Boolean = true,-->
-        <!--    var fatherSide: Boolean = true,-->
-        <!--    var motherSide: Boolean = true,-->
-        <!--    var maleEvents: Boolean = true,-->
-        <!--    var femaleEvents: Boolean = true-->
+        <include
+            android:id="@+id/treeLines"
+            layout="@layout/layout_settings_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:description="@{`show family tree lines`}"
+            app:layout_constraintTop_toBottomOf="@id/lifeStoryLines"
+            app:title="@{`Show Tree Lines`}" />
+
+        <include
+            android:id="@+id/spouseLines"
+            layout="@layout/layout_settings_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:description="@{`show spouse lines`}"
+            app:layout_constraintTop_toBottomOf="@id/treeLines"
+            app:title="@{`Spouse Lines`}" />
+
+        <include
+            android:id="@+id/fatherSide"
+            layout="@layout/layout_settings_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:description="@{`filter by father's side of family`}"
+            app:layout_constraintTop_toBottomOf="@id/spouseLines"
+            app:title="@{`Father's Side`}" />
+
+        <include
+            android:id="@+id/motherSide"
+            layout="@layout/layout_settings_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:description="@{`filter by mother's side of family`}"
+            app:layout_constraintTop_toBottomOf="@id/fatherSide"
+            app:title="@{`Mother's Side`}" />
+
+
+        <include
+            android:id="@+id/maleEvents"
+            layout="@layout/layout_settings_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:description="@{`filter events based on gender`}"
+            app:layout_constraintTop_toBottomOf="@id/motherSide"
+            app:title="@{`Male Events`}" />
+
+
+        <include
+            android:id="@+id/femaleEvents"
+            layout="@layout/layout_settings_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:description="@{`filter events based on gender`}"
+            app:layout_constraintTop_toBottomOf="@id/maleEvents"
+            app:title="@{`Female Events`}" />
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:id="@+id/logout"
+            app:layout_constraintTop_toBottomOf="@id/femaleEvents"
+            android:layout_height="63dp">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_begin="@dimen/outer_margin" />
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Logout"
+                app:layout_constraintLeft_toLeftOf="@id/guideline_left"
+                app:layout_constraintBottom_toTopOf="@id/description"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="return to the login screen"
+                android:textAllCaps="true"
+                android:textSize="10sp"
+                app:layout_constraintLeft_toLeftOf="@id/guideline_left"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/title" />
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="1dp"
+                android:background="@color/gray_light"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

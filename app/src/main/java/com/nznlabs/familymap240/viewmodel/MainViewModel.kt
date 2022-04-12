@@ -32,7 +32,7 @@ class MainViewModel : BaseViewModel() {
     val paternalAncestors: LiveData<Set<String>> = MutableLiveData() // personID
     val maternalAncestors: LiveData<Set<String>> = MutableLiveData() // personID
     val lines: LiveData<List<LatLng>> = MutableLiveData()
-    val settings: LiveData<Settings> = MutableLiveData()
+    val settings: LiveData<Settings> = MutableLiveData(Settings())
     val message: LiveData<String?> = MutableLiveData()
 
 
@@ -108,6 +108,12 @@ class MainViewModel : BaseViewModel() {
         sessionManager.personID = newPersonID
     }
 
+    fun logout() {
+        sessionManager.username = null
+        sessionManager.personID = null
+        sessionManager.authToken.postValue(null)
+    }
+
     private fun setPersons(newPersons: List<Person>): Map<String, Person> {
         val tmpPersons = persons.value?.toMutableMap() ?: mutableMapOf()
         for (person in newPersons) {
@@ -123,6 +129,10 @@ class MainViewModel : BaseViewModel() {
             tmpEvents[event.eventID] = event
         }
         events.set(tmpEvents)
+    }
+
+    fun setSettings(newSettings: Settings) {
+        settings.set(newSettings)
     }
 
     private fun postPersonEvents(events: List<Event>) {
@@ -175,7 +185,7 @@ class MainViewModel : BaseViewModel() {
         }
     }
 
-    private fun postMessage(newMessage: String) {
+    fun postMessage(newMessage: String?) {
         message.postValue(newMessage)
     }
 }

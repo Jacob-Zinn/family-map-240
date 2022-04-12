@@ -67,14 +67,19 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(),
     private fun subscribeObservers() {
 
         sessionManager.authToken.observe(viewLifecycleOwner) {
-            try {
-                findNavController().navigate(AuthFragmentDirections.actionAuthFragmentToMapFragment())
-            } catch (e: NullPointerException) {
-                Timber.e(e, "ERROR: Failed to navigate to map fragment")
+            if (it != null) {
+                try {
+                    findNavController().navigate(AuthFragmentDirections.actionAuthFragmentToMapFragment())
+                } catch (e: NullPointerException) {
+                    Timber.e(e, "ERROR: Failed to navigate to map fragment")
+                }
             }
         }
         viewModel.message.observe(viewLifecycleOwner) {
-            Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+            if (it != null) {
+                Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+                viewModel.postMessage(null)
+            }
         }
 
     }

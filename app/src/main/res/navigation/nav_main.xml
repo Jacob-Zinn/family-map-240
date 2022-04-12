@@ -47,7 +47,17 @@
         android:id="@+id/settingsFragment"
         android:name="com.nznlabs.familymap240.ui.SettingsFragment"
         android:label="Family Map: Settings"
-        tools:layout="@layout/fragment_settings" />
+        tools:layout="@layout/fragment_settings" >
+        <action
+            android:id="@+id/action_settingsFragment_to_authFragment"
+            app:destination="@id/authFragment"
+            app:popUpTo="@+id/authFragment"
+            app:popUpToInclusive="true"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
 
     <fragment
         android:id="@+id/searchFragment"
