@@ -2,6 +2,7 @@ package com.nznlabs.familymap240.ui
 
 import android.os.Bundle
 import android.view.View
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.nznlabs.familymap240.adapter.PersonListAdapter
 import com.nznlabs.familymap240.databinding.FragmentPersonBinding
@@ -9,9 +10,10 @@ import com.nznlabs.familymap240.viewmodel.MainViewModel
 import models.Event
 import models.Person
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import timber.log.Timber
 
 
-class PersonFragment : BaseFragment<FragmentPersonBinding>()  {
+class PersonFragment : BaseFragment<FragmentPersonBinding>() , PersonListAdapter.Interaction {
 
     private val viewModel by sharedViewModel<MainViewModel>()
     private val args: PersonFragmentArgs by navArgs()
@@ -26,17 +28,24 @@ class PersonFragment : BaseFragment<FragmentPersonBinding>()  {
 
         viewModel.persons.value?.let {
             val rootPerson: Person = it[args.personID]!!
+            initPersonInfo(rootPerson)
             initListView(rootPerson, it)
         }
     }
 
+    private fun initPersonInfo(person: Person){
+        binding.firstName.text = person.firstName
+        binding.lastName.text = person.lastName
+        binding.gender.text = if (person.gender == "m") "Male" else "Female"
+    }
 
     private fun initListView(rootPerson: Person, persons: MutableMap<String, Person>) {
         val events: List<Event> = viewModel.personEvents.value?.get(rootPerson.personID)?.toList() ?: mutableListOf()
         val sortedEvents = sortEvents(events)
         val relatives = findRelatives(rootPerson, persons)
 
-        personAdapter = PersonListAdapter(events = sortedEvents, relatives = relatives)
+        personAdapter = PersonListAdapter(events = sortedEvents, relatives, rootPerson, interaction = this)
+        binding.listView.setAdapter(personAdapter)
     }
 
     private fun sortEvents(events: List<Event>): List<Event> {
@@ -67,6 +76,22 @@ class PersonFragment : BaseFragment<FragmentPersonBinding>()  {
         relatives["children"] = children
 
         return relatives
+    }
+
+    override fun personSelected(person: Person) {
+        try {
+            findNavController().navigate(PersonFragmentDirections.actionPersonFragmentSelf(personID = person.personID))
+        } catch (e: Exception) {
+            Timber.d("Navigation to person fragment failed.")
+        }
+    }
+
+    override fun eventSelected(event: Event) {
+        try {
+            findNavController().navigate(PersonFragmentDirections.actionPersonFragmentToEventFragment(eventID = event.eventID))
+        } catch (e: Exception) {
+            Timber.d("Navigation to event fragment failed.")
+        }
     }
 
 }

@@ -1,16 +1,24 @@
 package com.nznlabs.familymap240.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseExpandableListAdapter
+import com.nznlabs.familymap240.R
+import com.nznlabs.familymap240.databinding.LayoutExpandedEventListItemBinding
+import com.nznlabs.familymap240.databinding.LayoutExpandedPersonListItemBinding
 import com.nznlabs.familymap240.databinding.LayoutGroupItemBinding
-import com.nznlabs.familymap240.databinding.LayoutPersonListItemBinding
 import models.Event
 import models.Person
 import java.lang.IllegalArgumentException
 
-class PersonListAdapter(private val events: List<Event>, private val relatives: Map<String, Any?>) :
+class PersonListAdapter(
+    private val events: List<Event>,
+    private val relatives: Map<String, Any?>,
+    private val rootPerson: Person,
+    private val interaction: Interaction?
+) :
     BaseExpandableListAdapter() {
 
     companion object {
@@ -23,12 +31,23 @@ class PersonListAdapter(private val events: List<Event>, private val relatives: 
     }
 
     override fun getChildrenCount(groupPosition: Int): Int {
-        return when (groupPosition) {
+        when (groupPosition) {
             EVENT_GROUP_POS -> {
-                events.size
+                return events.size
             }
             RELATIVE_GROUP_POS -> {
-                relatives.size
+                var count = 0
+                if (relatives["mother"] != null) {
+                    count++
+                }
+                if (relatives["father"] != null) {
+                    count++
+                }
+                if (relatives["spouse"] != null) {
+                    count++
+                }
+                count += (relatives["children"] as List<*>).size
+                return count
             }
             else -> {
                 throw IllegalArgumentException()
@@ -90,9 +109,10 @@ class PersonListAdapter(private val events: List<Event>, private val relatives: 
         return false
     }
 
+    @SuppressLint("SetTextI18n")
     override fun getGroupView(groupPosition: Int, isExpanded: Boolean, convertView: View?, parent: ViewGroup?): View {
 
-        val itemBinding = LayoutGroupItemBinding.inflate(
+        val groupBinding = LayoutGroupItemBinding.inflate(
             LayoutInflater.from(parent?.context),
             parent,
             false
@@ -100,40 +120,102 @@ class PersonListAdapter(private val events: List<Event>, private val relatives: 
 
         when (groupPosition) {
             EVENT_GROUP_POS -> {
-                itemBinding.title.text = "LIFE EVENTS"
+                groupBinding.title.text = "LIFE EVENTS"
             }
             RELATIVE_GROUP_POS -> {
-                itemBinding.title.text = "FAMILY"
+                groupBinding.title.text = "FAMILY"
             }
             else -> throw IllegalArgumentException()
         }
 
-        return itemBinding.title
+        return groupBinding.root
     }
 
-    override fun getChildView(groupPosition: Int, childPosition: Int, isLastChild: Boolean, convertView: View?, parent: ViewGroup?): View {
-        val view: View
+    override fun getChildView(
+        groupPosition: Int,
+        childPosition: Int,
+        isLastChild: Boolean,
+        convertView: View?,
+        parent: ViewGroup?
+    ): View {
+        val childView: View
 
         when (groupPosition) {
             EVENT_GROUP_POS -> {
-                view = LayoutGroupItemBinding.inflate(
+                val childBinding = LayoutExpandedEventListItemBinding.inflate(
                     LayoutInflater.from(parent?.context),
                     parent,
                     false
                 )
-                    itemBinding.title.text = "LIFE EVENTS"
+                initEventView(childBinding, childPosition)
+                childView = childBinding.root
             }
             RELATIVE_GROUP_POS -> {
-                itemBinding.title.text = "FAMILY"
+                val childBinding = LayoutExpandedPersonListItemBinding.inflate(
+                    LayoutInflater.from(parent?.context),
+                    parent,
+                    false
+                )
+                initRelativeView(childBinding, childPosition)
+                childView = childBinding.root
             }
             else -> throw IllegalArgumentException()
         }
 
-        return itemBinding.title
+        return childView
     }
 
-    override fun isChildSelectable(p0: Int, p1: Int): Boolean {
-        TODO("Not yet implemented")
+    override fun isChildSelectable(groupPosition: Int, childPositio: Int): Boolean {
+        return true
+    }
+
+
+    @SuppressLint("SetTextI18n")
+    private fun initEventView(binding: LayoutExpandedEventListItemBinding, childPosition: Int) {
+        val event: Event = events[childPosition]
+        binding.eventInfo.text = "${event.eventType.uppercase()}: ${event.city}, ${event.country} (${event.year})"
+        binding.name.text = "${rootPerson.firstName} ${rootPerson.lastName}"
+        binding.root.setOnClickListener {
+            interaction?.eventSelected(event)
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun initRelativeView(binding: LayoutExpandedPersonListItemBinding, childPosition: Int) {
+        val person: Person = when (childPosition) {
+            0 -> {
+                binding.relation.text = "Father"
+                relatives["father"] as Person
+            }
+            1 -> {
+                binding.relation.text = "Mother"
+                relatives["mother"] as Person
+            }
+            2 -> {
+                binding.relation.text = "Spouse"
+                relatives["spouse"] as Person
+            }
+            else -> {
+                binding.relation.text = "Child"
+                val children = relatives["children"] as List<*>
+                children[childPosition - 3] as Person
+            }
+        }
+
+        binding.name.text = "${person.firstName} ${person.lastName}"
+        if (person.gender == "m") {
+            binding.genderImg.setImageResource(R.drawable.ic_baseline_male_blue_24)
+        } else {
+            binding.genderImg.setImageResource(R.drawable.ic_round_female_red_24)
+        }
+        binding.root.setOnClickListener {
+            interaction?.personSelected(person)
+        }
+    }
+
+    interface Interaction {
+        fun personSelected(person: Person)
+        fun eventSelected(event: Event)
     }
 
 }

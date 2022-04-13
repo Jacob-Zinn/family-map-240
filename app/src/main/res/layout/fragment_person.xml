@@ -117,11 +117,11 @@
         android:background="@color/gray_light" />
 
 
-
     <ExpandableListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:indicatorLeft="?android:attr/expandableListPreferredItemIndicatorLeft"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/divider3"
         tools:context="com.nznlabs.lpquickreview.ui.SessionsFragment" />
