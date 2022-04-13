@@ -70,6 +70,15 @@ class MainViewModel : BaseViewModel() {
         }
     }
 
+    fun clearDB() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = serverProxy.clearDB()
+            if (!result.success) {
+                postMessage(result.message)
+            }
+        }
+    }
+
     private suspend fun getUserData(authToken: String, personID: String): String? {
         val personsResult = serverProxy.getPersons(authToken)
         if (!personsResult.success) {

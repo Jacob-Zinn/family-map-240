@@ -120,10 +120,10 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(),
         val s5: String = binding.emailInputTxt.text.toString()
         val s6: String = binding.firstNameInputTxt.text.toString()
         val s7: String = binding.lastNameInputTxt.text.toString()
-        val genderID: Int = binding.genderRadioGroup.checkedRadioButtonId
+        val isMale: Boolean = binding.maleRadio.isChecked
 
         return if (!(tmpLoginRequest == null || s5.isEmpty() || s6.isEmpty() || s7.isEmpty())) {
-            val gender = if (genderID == 1) {
+            val gender = if (isMale) {
                 "m"
             } else {
                 "f"

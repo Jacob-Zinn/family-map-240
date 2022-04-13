@@ -41,11 +41,23 @@ class PersonFragment : BaseFragment<FragmentPersonBinding>() , PersonListAdapter
 
     private fun initListView(rootPerson: Person, persons: MutableMap<String, Person>) {
         val events: List<Event> = viewModel.personEvents.value?.get(rootPerson.personID)?.toList() ?: mutableListOf()
-        val sortedEvents = sortEvents(events)
+        val filteredEvents: List<Event> = filterEvents(events)
+        val sortedEvents = sortEvents(filteredEvents)
         val relatives = findRelatives(rootPerson, persons)
 
         personAdapter = PersonListAdapter(events = sortedEvents, relatives, rootPerson, interaction = this)
         binding.listView.setAdapter(personAdapter)
+    }
+
+    private fun filterEvents(events: List<Event>): List<Event> {
+        val filteredEvents = mutableListOf<Event>()
+        if (viewModel.settings.value!!.maleEvents) {
+            events.filterTo(filteredEvents) { viewModel.persons.value!![it.personID]!!.gender == "m" }
+        }
+        if (viewModel.settings.value!!.femaleEvents) {
+            events.filterTo(filteredEvents) { viewModel.persons.value!![it.personID]!!.gender == "f" }
+        }
+        return filteredEvents
     }
 
     private fun sortEvents(events: List<Event>): List<Event> {

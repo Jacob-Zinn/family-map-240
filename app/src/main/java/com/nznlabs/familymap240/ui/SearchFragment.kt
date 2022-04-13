@@ -71,10 +71,11 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
             }
         }
 
-        viewModel.events.value?.let { events ->
-            for (event in events) {
-                if ("${event.value.eventType} ${event.value.country} ${event.value.city} ${event.value.year}".lowercase().contains(search)) {
-                    eventsResult.add(event.value)
+        viewModel.events.value?.let {
+            val filteredEvents = filterEvents(it.values.toList())
+            for (event in filteredEvents) {
+                if ("${event.eventType} ${event.country} ${event.city} ${event.year}".lowercase().contains(search)) {
+                    eventsResult.add(event)
                 }
             }
         }
@@ -86,6 +87,17 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
         )
         binding.recView.adapter = searchAdapter
 
+    }
+
+    private fun filterEvents(events: List<Event>): List<Event> {
+        val filteredEvents = mutableListOf<Event>()
+        if (viewModel.settings.value!!.maleEvents) {
+            events.filterTo(filteredEvents) { viewModel.persons.value!![it.personID]!!.gender == "m" }
+        }
+        if (viewModel.settings.value!!.femaleEvents) {
+            events.filterTo(filteredEvents) { viewModel.persons.value!![it.personID]!!.gender == "f" }
+        }
+        return filteredEvents
     }
 
     override fun personSelected(position: Int, person: Person) {

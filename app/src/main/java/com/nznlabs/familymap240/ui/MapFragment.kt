@@ -78,6 +78,10 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
         }
     }
 
+    private fun clearMap() {
+        mMap.clear()
+    }
+
     private fun addMarker(event: Event, color: Float) {
         val latLng = LatLng(event.latitude.toDouble(), event.longitude.toDouble())
 
@@ -95,6 +99,7 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
 
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setEventInfo(event: Event, person: Person?) {
         person?.let {
             binding.eventInfo.name.text = "${person.firstName} ${person.lastName}"
