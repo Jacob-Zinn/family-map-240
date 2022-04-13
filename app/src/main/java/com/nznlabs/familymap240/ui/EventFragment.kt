@@ -1,10 +1,8 @@
 package com.nznlabs.familymap240.ui
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
@@ -16,30 +14,15 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.nznlabs.familymap240.R
 import com.nznlabs.familymap240.databinding.FragmentMapBinding
+import com.nznlabs.familymap240.model.Settings
 import com.nznlabs.familymap240.viewmodel.MainViewModel
 import models.Event
 import models.Person
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import timber.log.Timber
-import java.lang.Exception
 
 
 class EventFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener, View.OnClickListener{
-
-
-    enum class EventColors(val color: Float) {
-        BIRTH_COLOR(BitmapDescriptorFactory.HUE_GREEN),
-        DEATH_COLOR(BitmapDescriptorFactory.HUE_VIOLET),
-        MARRIAGE_COLOR(BitmapDescriptorFactory.HUE_ROSE),
-        ERROR_COLOR(BitmapDescriptorFactory.HUE_ORANGE),
-    }
-
-    enum class LineColors(val color: Int) {
-        SPOUSE(R.color.death_color),
-        TREE(R.color.blue_navy),
-        LIFE_STORY(R.color.orange),
-        ERROR_COLOR(R.color.black)
-    }
 
     private val args: EventFragmentArgs by navArgs()
     private lateinit var mMap: GoogleMap
@@ -75,10 +58,10 @@ class EventFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Goo
         viewModel.events.value?.let { events ->
             for (eventItem in events) {
                 val color = when(eventItem.value.eventType) {
-                    "birth" -> EventColors.BIRTH_COLOR.color
-                    "death" -> EventColors.DEATH_COLOR.color
-                    "marriage" -> EventColors.MARRIAGE_COLOR.color
-                    else -> EventColors.ERROR_COLOR.color
+                    "birth" -> MapFragment.EventColors.BIRTH_COLOR.color
+                    "death" -> MapFragment.EventColors.DEATH_COLOR.color
+                    "marriage" -> MapFragment.EventColors.MARRIAGE_COLOR.color
+                    else -> MapFragment.EventColors.ERROR_COLOR.color
                 }
 
                 addMarker(eventItem.value, color)
@@ -93,13 +76,68 @@ class EventFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Goo
         marker?.tag = event
     }
 
-    private fun drawLine(startEvent: Event, endEvent: Event, color: Float, width: Float) {
+    private fun drawLine(startEvent: Event, endEvent: Event, color: Int, width: Float) {
         val startPnt = LatLng(startEvent.latitude.toDouble(), startEvent.longitude.toDouble())
         val endPnt = LatLng(endEvent.latitude.toDouble(), endEvent.longitude.toDouble())
 
-        val options = PolylineOptions().add(startPnt).add(endPnt).color(R.color.blue_navy).width(width)
+        val options = PolylineOptions().add(startPnt).add(endPnt).color(color).width(width)
         val line: Polyline = mMap.addPolyline(options)
         viewModel.addPolyline(line)
+    }
+
+    private fun addLines(selectedEvent: Event, events: List<Event>, persons: List<Person>, settings: Settings) {
+        // clearing
+        for (line in viewModel.lines) {
+            line.remove()
+        }
+
+        val associatedPerson = persons.find { it.personID == selectedEvent.personID }
+
+        // spouse
+        if (settings.showSpouseLines) {
+            val spouseEvents = events.filter { it.personID == associatedPerson?.spouseID }
+            if (!spouseEvents.isNullOrEmpty()) {
+                val spouseEvent =
+                    spouseEvents.find { it.eventType == "birth" } ?: spouseEvents.minByOrNull { it.year }!!
+                drawLine(selectedEvent, spouseEvent, MapFragment.LineColors.SPOUSE.color, 12f)
+            }
+        }
+
+        // Family tree
+        if (settings.showTreeLines) {
+            val fatherEvents = events.filter { it.personID == associatedPerson?.fatherID }
+            if (!fatherEvents.isNullOrEmpty()) {
+                val fatherEvent = fatherEvents.find { it.eventType == "birth" } ?: fatherEvents.minByOrNull { it.year }!!
+                drawLine(selectedEvent, fatherEvent, MapFragment.LineColors.TREE.color, 14f)
+                drawAncestorLines(associatedPerson!!.fatherID, fatherEvent, events, persons, 2)
+            }
+
+            val motherEvents = events.filter { it.personID == associatedPerson?.motherID }
+            if (!motherEvents.isNullOrEmpty()) {
+                val motherEvent = motherEvents.find { it.eventType == "birth" } ?: motherEvents.minByOrNull { it.year }!!
+                drawLine(selectedEvent, motherEvent, MapFragment.LineColors.TREE.color, 14f)
+                drawAncestorLines(associatedPerson!!.motherID, motherEvent, events, persons, 2)
+            }
+        }
+
+    }
+
+    private fun drawAncestorLines(currentPersonID: String, currentEvent: Event, events: List<Event>, persons: List<Person>, generationCount: Int) {
+        val currentPerson = persons.find{it.personID == currentPersonID}
+
+        val fatherEvents = events.filter { it.personID == currentPerson?.fatherID }
+        if (!fatherEvents.isNullOrEmpty()) {
+            val fatherEvent = fatherEvents.find { it.eventType == "birth" } ?: fatherEvents.minByOrNull { it.year }!!
+            drawLine(currentEvent, fatherEvent, MapFragment.LineColors.TREE.color, 14f/ generationCount)
+            drawAncestorLines(currentPerson!!.fatherID, fatherEvent, events, persons, generationCount + 1)
+        }
+
+        val motherEvents = events.filter { it.personID == currentPerson?.motherID }
+        if (!motherEvents.isNullOrEmpty()) {
+            val motherEvent = motherEvents.find { it.eventType == "birth" } ?: motherEvents.minByOrNull { it.year }!!
+            drawLine(currentEvent, motherEvent, MapFragment.LineColors.TREE.color, 14f/ generationCount)
+            drawAncestorLines(currentPerson!!.motherID, motherEvent, events, persons, generationCount + 1)
+        }
     }
 
     @SuppressLint("SetTextI18n")

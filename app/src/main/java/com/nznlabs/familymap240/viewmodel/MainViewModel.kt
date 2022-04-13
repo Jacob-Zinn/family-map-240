@@ -30,13 +30,14 @@ class MainViewModel : BaseViewModel() {
     var unfilteredPersonEvents: Map<String, List<Event>> = mapOf()
     var paternalAncestors: Set<String> = setOf()
     var maternalAncestors: Set<String> = setOf()
+    var lines: MutableList<Polyline> = mutableListOf()
 
     // Live data
     val persons: LiveData<MutableMap<String, Person>> = MutableLiveData()// personID
     val events: LiveData<MutableMap<String, Event>> = MutableLiveData() // personID
     val personEvents: LiveData<MutableMap<String, MutableList<Event>>> = MutableLiveData() // personID
-    val lines: LiveData<MutableList<Polyline>> = MutableLiveData()
     val settings: LiveData<Settings> = MutableLiveData(Settings())
+    val selectedEvent: LiveData<Event> = MutableLiveData()
     val message: LiveData<String?> = MutableLiveData()
 
     fun login(loginRequest: LoginRequest) {
@@ -147,6 +148,8 @@ class MainViewModel : BaseViewModel() {
 
     private fun filterPersons(unfilteredPersons: Map<String, Person>, settings: Settings): List<Person> {
         val filteredPersons = mutableListOf<Person>()
+        filteredPersons.add(unfilteredPersons[sessionManager.personID]!!)
+
         if (settings.fatherSide) {
             val persons = paternalAncestors.map { unfilteredPersons[it]!! }
             filteredPersons.addAll(persons)
@@ -154,9 +157,6 @@ class MainViewModel : BaseViewModel() {
         if (settings.motherSide) {
             val persons = maternalAncestors.map { unfilteredPersons[it]!! }
             filteredPersons.addAll(persons)
-        }
-        if (settings.fatherSide || settings.motherSide) {
-            filteredPersons.add(unfilteredPersons[sessionManager.personID]!!)
         }
         return filteredPersons
     }
@@ -194,6 +194,10 @@ class MainViewModel : BaseViewModel() {
             tmpEvents[event.eventID] = event
         }
         events.set(tmpEvents)
+    }
+
+    fun setSelectedEvent(event: Event) {
+        selectedEvent.set(event)
     }
 
     fun setSettings(newSettings: Settings) {
@@ -249,9 +253,7 @@ class MainViewModel : BaseViewModel() {
     }
 
     fun addPolyline(line: Polyline) {
-        val tmpLines: MutableList<Polyline> = lines.value ?: mutableListOf()
-        tmpLines.add(line)
-        lines.set(tmpLines)
+        this.lines.add(line)
     }
 
     fun postMessage(newMessage: String?) {

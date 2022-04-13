@@ -36,28 +36,28 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(),
         super.onViewCreated(view, savedInstanceState)
 
         initFakeInput()
-        deleteLoginTest()
         initListeners()
         subscribeObservers()
     }
-
-    private fun deleteLoginTest() {
-        initHTTPConnectionParams()
-        viewModel.login(LoginRequest("JacobZinn", "FamilyMapPass"))
-    }
-
-
+//
+//    private fun deleteLoginTest() {
+//        initHTTPConnectionParams()
+//        viewModel.login(LoginRequest("JacobZinn", "FamilyMapPass"))
+//    }
 
 
     @SuppressLint("SetTextI18n")
     private fun initFakeInput() {
         binding.serverHostInputTxt.setText("10.0.2.2") // 66.219.253.90 // 10.0.2.2 //         binding.serverHostInputTxt.setText("localhost/127.0.0.1")
         binding.serverPortInputTxt.setText("8080")
-        binding.usernameInputTxt.setText("JacobZinn")
-        binding.passwordInputTxt.setText("FamilyMapPass")
-        binding.emailInputTxt.setText("Jacobpzinn@gmail.com")
-        binding.firstNameInputTxt.setText("Jacob")
-        binding.lastNameInputTxt.setText("Zinn")
+        binding.usernameInputTxt.setText("sheila")
+        binding.passwordInputTxt.setText("parker")
+
+//        binding.usernameInputTxt.setText("JacobZinn")
+//        binding.passwordInputTxt.setText("FamilyMapPass")
+//        binding.emailInputTxt.setText("Jacobpzinn@gmail.com")
+//        binding.firstNameInputTxt.setText("Jacob")
+//        binding.lastNameInputTxt.setText("Zinn")
     }
 
     private fun initListeners() {
