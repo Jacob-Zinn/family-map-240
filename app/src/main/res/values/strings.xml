@@ -8,4 +8,8 @@
     <string name="event_info_provided_here">EVENT: Info provided here</string>
     <string name="close">close</string>
     <string name="gender">gender</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="gender_caps">Gender</string>
+    <string name="gender">gender</string>
 </resources>
