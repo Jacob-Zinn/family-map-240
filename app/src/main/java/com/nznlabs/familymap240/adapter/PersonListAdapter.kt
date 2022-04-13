@@ -15,7 +15,7 @@ import java.lang.IllegalArgumentException
 
 class PersonListAdapter(
     private val events: List<Event>,
-    private val relatives: Map<String, Any?>,
+    private val relatives: List<Map<String, Person>>,
     private val rootPerson: Person,
     private val interaction: Interaction?
 ) :
@@ -36,18 +36,19 @@ class PersonListAdapter(
                 return events.size
             }
             RELATIVE_GROUP_POS -> {
-                var count = 0
-                if (relatives["mother"] != null) {
-                    count++
-                }
-                if (relatives["father"] != null) {
-                    count++
-                }
-                if (relatives["spouse"] != null) {
-                    count++
-                }
-                count += (relatives["children"] as List<*>).size
-                return count
+                return relatives.size
+//                var count = 0
+//                if (relatives["mother"] != null) {
+//                    count++
+//                }
+//                if (relatives["father"] != null) {
+//                    count++
+//                }
+//                if (relatives["spouse"] != null) {
+//                    count++
+//                }
+//                count += (relatives["children"] as List<*>).size
+//                return count
             }
             else -> {
                 throw IllegalArgumentException()
@@ -75,21 +76,23 @@ class PersonListAdapter(
                 return events[groupPosition]
             }
             RELATIVE_GROUP_POS -> {
-                return when (childPosition) {
-                    0 -> {
-                        relatives["father"] as Person
-                    }
-                    1 -> {
-                        relatives["mother"] as Person
-                    }
-                    2 -> {
-                        relatives["spouse"] as Person
-                    }
-                    else -> {
-                        val children = relatives["children"] as List<*>
-                        children[childPosition - 3] as Person
-                    }
-                }
+                return relatives[groupPosition]
+//
+//                return when (childPosition) {
+//                    0 -> {
+//                        relatives["father"] as Person
+//                    }
+//                    1 -> {
+//                        relatives["mother"] as Person
+//                    }
+//                    2 -> {
+//                        relatives["spouse"] as Person
+//                    }
+//                    else -> {
+//                        val children = relatives["children"] as List<*>
+//                        children[childPosition - 3] as Person
+//                    }
+//                }
             }
             else -> {
                 throw IllegalArgumentException()
@@ -182,34 +185,38 @@ class PersonListAdapter(
 
     @SuppressLint("SetTextI18n")
     private fun initRelativeView(binding: LayoutExpandedPersonListItemBinding, childPosition: Int) {
-        val person: Person = when (childPosition) {
-            0 -> {
-                binding.relation.text = "Father"
-                relatives["father"] as Person
-            }
-            1 -> {
-                binding.relation.text = "Mother"
-                relatives["mother"] as Person
-            }
-            2 -> {
-                binding.relation.text = "Spouse"
-                relatives["spouse"] as Person
-            }
-            else -> {
-                binding.relation.text = "Child"
-                val children = relatives["children"] as List<*>
-                children[childPosition - 3] as Person
-            }
-        }
+        val personObj: Map<String, Person> = relatives[childPosition]
+//        val person: Person = when (childPosition) {
+//            0 -> {
+//                binding.relation.text = "Father"
+//                relatives["father"] as Person
+//            }
+//            1 -> {
+//                binding.relation.text = "Mother"
+//                relatives["mother"] as Person
+//            }
+//            2 -> {
+//                binding.relation.text = "Spouse"
+//                relatives["spouse"] as Person
+//            }
+//            else -> {
+//                binding.relation.text = "Child"
+//                val children = relatives["children"] as List<*>
+//                children[childPosition - 3] as Person
+//            }
+//        }
 
-        binding.name.text = "${person.firstName} ${person.lastName}"
-        if (person.gender == "m") {
+        val relation = personObj.keys.first()
+        binding.relation.text = relation
+
+        binding.name.text = "${personObj[relation]!!.firstName} ${personObj[relation]!!.lastName}"
+        if (personObj[relation]!!.gender == "m") {
             binding.genderImg.setImageResource(R.drawable.ic_baseline_male_blue_24)
         } else {
             binding.genderImg.setImageResource(R.drawable.ic_round_female_red_24)
         }
         binding.root.setOnClickListener {
-            interaction?.personSelected(person)
+            interaction?.personSelected(personObj[relation]!!)
         }
     }
 

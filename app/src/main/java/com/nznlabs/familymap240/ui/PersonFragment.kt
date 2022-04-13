@@ -61,19 +61,22 @@ class PersonFragment : BaseFragment<FragmentPersonBinding>() , PersonListAdapter
         return sortedEvents
     }
 
-    private fun findRelatives(rootPerson: Person, persons: MutableMap<String, Person>): Map<String, Any?> {
-        val relatives = mutableMapOf<String, Any?>()
-        relatives["father"] = persons[rootPerson.fatherID]
-        relatives["mother"] = persons[rootPerson.motherID]
-        relatives["spouse"] = persons[rootPerson.spouseID]
-        // checking for children
-        val children = mutableListOf<Person>()
+    private fun findRelatives(rootPerson: Person, persons: MutableMap<String, Person>): List<Map<String, Person>> {
+        val relatives = mutableListOf<Map<String, Person>>()
+        persons[rootPerson.fatherID]?.let {
+            relatives.add(mapOf(Pair("Father", it)))
+        }
+        persons[rootPerson.motherID]?.let {
+            relatives.add(mapOf(Pair("Mother", it)))
+        }
+        persons[rootPerson.spouseID]?.let {
+            relatives.add(mapOf(Pair("Spouse", it)))
+        }
         for (person in persons) {
             if (person.value.fatherID == rootPerson.personID || person.value.motherID == rootPerson.personID) {
-                children.add(person.value)
+                relatives.add(mapOf(Pair("Child", person.value)))
             }
         }
-        relatives["children"] = children
 
         return relatives
     }
