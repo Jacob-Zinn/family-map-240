@@ -63,6 +63,44 @@
         android:id="@+id/searchFragment"
         android:name="com.nznlabs.familymap240.ui.SearchFragment"
         android:label="Family Map: Search"
-        tools:layout="@layout/fragment_search" />
+        tools:layout="@layout/fragment_search" >
+        <action
+            android:id="@+id/action_searchFragment_to_eventFragment"
+            app:popUpTo="@+id/mapFragment"
+            app:destination="@id/eventFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+        <action
+            android:id="@+id/action_searchFragment_to_personFragment"
+            app:destination="@id/personFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/eventFragment"
+        android:name="com.nznlabs.familymap240.ui.EventFragment"
+        android:label="Family Map: Events"
+        tools:layout="@layout/fragment_event" >
+        <argument
+            android:name="eventID"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/personFragment"
+        android:name="com.nznlabs.familymap240.ui.PersonFragment"
+        android:label="Family Map: Person"
+        tools:layout="@layout/fragment_person" >
+        <argument
+            android:name="personID"
+            app:argType="string"
+           />
+    </fragment>
 
 </navigation>

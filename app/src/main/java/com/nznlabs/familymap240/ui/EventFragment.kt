@@ -8,6 +8,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -20,9 +21,11 @@ import models.Event
 import models.Person
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import timber.log.Timber
+import java.lang.Exception
 
 
-class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+class EventFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+
 
     enum class EventColors(val color: Float) {
         BIRTH_COLOR(BitmapDescriptorFactory.HUE_GREEN),
@@ -38,9 +41,11 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
         ERROR_COLOR(R.color.black)
     }
 
+    private val args: EventFragmentArgs by navArgs()
     private lateinit var mMap: GoogleMap
-    private lateinit var menu: Menu
+    lateinit var selectedEvent: Event
     private val viewModel by sharedViewModel<MainViewModel>()
+
 
     override fun bind(): FragmentMapBinding {
         return FragmentMapBinding.inflate(layoutInflater)
@@ -48,7 +53,6 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setHasOptionsMenu(true)
         binding.map.getFragment<SupportMapFragment>().getMapAsync(this)
     }
 
@@ -57,9 +61,11 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
         mMap.setOnMarkerClickListener(this)
 
         populateMap()
-        // Add a marker in United States and move the camera
-        val us = LatLng(39.0, -100.0)
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(us))
+
+        selectedEvent = viewModel.events.value?.get(args.eventID)!!
+        val person: Person? = viewModel.persons.value?.get(selectedEvent.personID)
+        setEventInfo(selectedEvent, person)
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(selectedEvent.latitude.toDouble(), selectedEvent.longitude.toDouble())))
     }
 
     private fun populateMap() {
@@ -92,9 +98,9 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
         val options = PolylineOptions().add(startPnt).add(endPnt).color(R.color.blue_navy).width(width)
         val line: Polyline = mMap.addPolyline(options)
         viewModel.addPolyline(line)
-
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setEventInfo(event: Event, person: Person?) {
         person?.let {
             binding.eventInfo.name.text = "${person.firstName} ${person.lastName}"
@@ -108,39 +114,13 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
         binding.eventInfo.root.isVisible = true
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        this.menu = menu
-        inflater.inflate(R.menu.map_menu, this.menu)
-    }
-
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // option selected from action bar menu
-        when (item.itemId) {
-            R.id.action_settings -> {
-                try {
-                    findNavController().navigate(MapFragmentDirections.actionMapFragmentToSettingsFragment())
-                } catch (e: NullPointerException) {
-                    Timber.e(e, "ERROR: Failed to navigate to settings fragment")
-                }
-            }
-            R.id.action_search -> {
-                try {
-                    findNavController().navigate(MapFragmentDirections.actionMapFragmentToSearchFragment())
-                } catch (e: NullPointerException) {
-                    Timber.e(e, "ERROR: Failed to navigate to search fragment")
-                }
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    @SuppressLint("SetTextI18n")
     override fun onMarkerClick(marker: Marker): Boolean {
 
         val event: Event = marker.tag as Event
         val person: Person? = viewModel.persons.value?.get(event.personID)
+
+        val latLng = LatLng(event.latitude.toDouble(), event.longitude.toDouble())
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
 
         setEventInfo(event, person)
 

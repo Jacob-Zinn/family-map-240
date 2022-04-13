@@ -36,9 +36,18 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(),
         super.onViewCreated(view, savedInstanceState)
 
         initFakeInput()
+        deleteLoginTest()
         initListeners()
         subscribeObservers()
     }
+
+    private fun deleteLoginTest() {
+        initHTTPConnectionParams()
+        viewModel.login(LoginRequest("JacobZinn", "FamilyMapPass"))
+    }
+
+
+
 
     @SuppressLint("SetTextI18n")
     private fun initFakeInput() {

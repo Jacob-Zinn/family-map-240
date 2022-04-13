@@ -5,6 +5,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.TextView
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nznlabs.familymap240.adapter.SearchListAdapter
 import com.nznlabs.familymap240.databinding.FragmentSearchBinding
@@ -12,6 +13,7 @@ import com.nznlabs.familymap240.viewmodel.MainViewModel
 import models.Event
 import models.Person
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import timber.log.Timber
 
 
 class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.Interaction, TextWatcher {
@@ -31,7 +33,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
         initSearchBar()
         initRecView()
         binding.close.setOnClickListener{
-            binding.searchBar.setText("", TextView.BufferType.EDITABLE);
+            binding.searchBar.setText("", TextView.BufferType.EDITABLE)
         }
     }
 
@@ -87,11 +89,19 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
     }
 
     override fun personSelected(position: Int, person: Person) {
-        TODO("Not yet implemented")
+        try {
+            findNavController().navigate(SearchFragmentDirections.actionSearchFragmentToPersonFragment(personID = person.personID))
+        } catch (e: Exception) {
+            Timber.d("Navigation to person fragment failed.")
+        }
     }
 
     override fun eventSelected(position: Int, event: Event) {
-        TODO("Not yet implemented")
+        try {
+            findNavController().navigate(SearchFragmentDirections.actionSearchFragmentToEventFragment(eventID = event.eventID))
+        } catch (e: Exception) {
+            Timber.d("Navigation to event fragment failed.")
+        }
     }
 
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}

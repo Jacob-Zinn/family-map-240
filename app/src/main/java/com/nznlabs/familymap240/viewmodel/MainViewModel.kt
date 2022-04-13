@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Polyline
 import com.nznlabs.familymap240.model.Settings
 import com.nznlabs.familymap240.repository.ServerProxy
 import com.nznlabs.familymap240.session.SessionManager
@@ -31,7 +32,7 @@ class MainViewModel : BaseViewModel() {
     val personEvents: LiveData<MutableMap<String, MutableList<Event>>> = MutableLiveData() // personID
     val paternalAncestors: LiveData<Set<String>> = MutableLiveData() // personID
     val maternalAncestors: LiveData<Set<String>> = MutableLiveData() // personID
-    val lines: LiveData<List<LatLng>> = MutableLiveData()
+    val lines: LiveData<MutableList<Polyline>> = MutableLiveData()
     val settings: LiveData<Settings> = MutableLiveData(Settings())
     val message: LiveData<String?> = MutableLiveData()
 
@@ -184,6 +185,12 @@ class MainViewModel : BaseViewModel() {
         descendant.motherID?.let {
             getAncestorHelper(it, persons, ancestorSet)
         }
+    }
+
+    fun addPolyline(line: Polyline) {
+        val tmpLines: MutableList<Polyline> = lines.value ?: mutableListOf()
+        tmpLines.add(line)
+        lines.set(tmpLines)
     }
 
     fun postMessage(newMessage: String?) {
