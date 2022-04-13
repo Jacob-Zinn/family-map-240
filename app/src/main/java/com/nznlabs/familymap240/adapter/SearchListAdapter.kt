@@ -13,7 +13,8 @@ import models.Person
 class SearchListAdapter(
     private val persons: List<Person>,
     private val events: List<Event>,
-    private val interaction: Interaction?
+    private val interaction: Interaction?,
+    private val filteredFullPersonsList: List<Person>
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
@@ -84,7 +85,8 @@ class SearchListAdapter(
                 holder.bind(persons[position])
             }
             is EventViewHolder -> {
-                holder.bind(events[position - persons.size])
+                val event = events[position - persons.size]
+                holder.bind(event, filteredFullPersonsList.find { it.personID == event.personID })
             }
         }
     }
@@ -124,12 +126,13 @@ class SearchListAdapter(
         private val interaction: Interaction?
     ) : RecyclerView.ViewHolder(itemBinding.root) {
 
-        fun bind(item: Event) = with(itemView) {
+        @SuppressLint("SetTextI18n")
+        fun bind(item: Event, person: Person?) = with(itemView) {
             itemView.setOnClickListener {
                 interaction?.eventSelected(bindingAdapterPosition, event = item)
             }
-            itemBinding.eventInfo.text = item.eventType
-            itemBinding.name.text = item.associatedUsername
+            itemBinding.eventInfo.text = "${item.eventType.uppercase()}: ${item.city}, ${item.country} (${item.year})"
+            itemBinding.name.text = "${person?.gender} ${person?.firstName} ${person?.lastName}"
         }
     }
 

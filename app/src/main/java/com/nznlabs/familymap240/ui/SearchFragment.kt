@@ -46,7 +46,8 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
         searchAdapter = SearchListAdapter(
             persons = listOf(),
             events = listOf(),
-            this
+            this,
+            listOf()
         )
         binding.recView.apply {
             adapter = searchAdapter
@@ -57,7 +58,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
     private fun querySearch() {
         val search: String = binding.searchBar.text.toString().lowercase()
         if (search.isBlank()) {
-            searchAdapter = SearchListAdapter(persons = listOf(), events = listOf(), this)
+            searchAdapter = SearchListAdapter(persons = listOf(), events = listOf(), this, listOf())
             binding.recView.adapter = searchAdapter
             return
         }
@@ -83,7 +84,8 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
         searchAdapter = SearchListAdapter(
             persons = personsResult,
             events = eventsResult,
-            this
+            this,
+            filteredFullPersonsList = viewModel.persons.value!!.values.toList()
         )
         binding.recView.adapter = searchAdapter
 
