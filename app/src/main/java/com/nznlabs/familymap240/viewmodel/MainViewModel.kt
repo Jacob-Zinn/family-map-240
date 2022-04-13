@@ -25,18 +25,16 @@ class MainViewModel : BaseViewModel() {
     private val sessionManager: SessionManager by inject()
     private val serverProxy: ServerProxy by inject()
 
-    var unfilteredPersons: Map<String,Person> = mapOf()
-    var unfilteredEvents:  Map<String, Event> = mapOf()
+    var unfilteredPersons: Map<String, Person> = mapOf()
+    var unfilteredEvents: Map<String, Event> = mapOf()
     var unfilteredPersonEvents: Map<String, List<Event>> = mapOf()
-    var unfilteredPaternalAncestors: Set<String> = setOf()
-    var unfilteredMaternalAncestors: Set<String> = setOf()
+    var paternalAncestors: Set<String> = setOf()
+    var maternalAncestors: Set<String> = setOf()
 
     // Live data
-    val persons: LiveData<MutableMap<String,Person>> = MutableLiveData()// personID
+    val persons: LiveData<MutableMap<String, Person>> = MutableLiveData()// personID
     val events: LiveData<MutableMap<String, Event>> = MutableLiveData() // personID
     val personEvents: LiveData<MutableMap<String, MutableList<Event>>> = MutableLiveData() // personID
-    val paternalAncestors: LiveData<Set<String>> = MutableLiveData() // personID
-    val maternalAncestors: LiveData<Set<String>> = MutableLiveData() // personID
     val lines: LiveData<MutableList<Polyline>> = MutableLiveData()
     val settings: LiveData<Settings> = MutableLiveData(Settings())
     val message: LiveData<String?> = MutableLiveData()
@@ -135,24 +133,47 @@ class MainViewModel : BaseViewModel() {
         unfilteredPersons = persons.value!!
         unfilteredEvents = events.value!!
         unfilteredPersonEvents = personEvents.value!!
-        unfilteredPaternalAncestors = paternalAncestors.value!!
-        unfilteredMaternalAncestors = maternalAncestors.value!!
     }
 
     fun filterData() {
         val settings = settings.value!!
+        val filteredPersons = filterPersons(unfilteredPersons, settings)
+        setPersons(filteredPersons)
+
         val filteredEvents = filterEvents(unfilteredEvents, settings)
         setEvents(filteredEvents)
         setPersonEvents(filteredEvents)
     }
 
+    private fun filterPersons(unfilteredPersons: Map<String, Person>, settings: Settings): List<Person> {
+        val filteredPersons = mutableListOf<Person>()
+        if (settings.fatherSide) {
+            val persons = paternalAncestors.map { unfilteredPersons[it]!! }
+            filteredPersons.addAll(persons)
+        }
+        if (settings.motherSide) {
+            val persons = maternalAncestors.map { unfilteredPersons[it]!! }
+            filteredPersons.addAll(persons)
+        }
+        if (settings.fatherSide || settings.motherSide) {
+            filteredPersons.add(unfilteredPersons[sessionManager.personID]!!)
+        }
+        return filteredPersons
+    }
+
     private fun filterEvents(events: Map<String, Event>, settings: Settings): List<Event> {
         val filteredEvents = mutableListOf<Event>()
+        val filteredPersonSet = mutableSetOf<String>()
+        for (person in persons.value!!.values) {
+            filteredPersonSet.add(person.personID)
+        }
+        val personFilteredEvents: List<Event> = events.values.filter { filteredPersonSet.contains(it.personID) }
+
         if (settings.maleEvents) {
-            events.values.filterTo(filteredEvents) { persons.value!![it.personID]!!.gender == "m" }
+            personFilteredEvents.filterTo(filteredEvents) { persons.value!![it.personID]?.gender == "m" }
         }
         if (settings.femaleEvents) {
-            events.values.filterTo(filteredEvents) { persons.value!![it.personID]!!.gender == "f" }
+            personFilteredEvents.filterTo(filteredEvents) { persons.value!![it.personID]?.gender == "f" }
         }
         return filteredEvents
     }
@@ -192,30 +213,28 @@ class MainViewModel : BaseViewModel() {
         personEvents.set(tmp)
     }
 
-    private fun setPaternalAncestors(persons: Map<String,Person>, rootPersonID: String) {
+    private fun setPaternalAncestors(persons: Map<String, Person>, rootPersonID: String) {
         if (persons.isEmpty()) return
 
         val paternalSet = mutableSetOf<String>()
-        paternalSet.add(rootPersonID)
         val rootPerson: Person = persons[rootPersonID]!!  // adds root user to this set
         rootPerson.fatherID?.let {
             getAncestorHelper(it, persons, paternalSet)
         }
 
-        paternalAncestors.set(paternalSet)
+        paternalAncestors = paternalSet
     }
 
-    private fun setMaternalAncestors(persons: Map<String,Person>, rootPersonID: String) {
+    private fun setMaternalAncestors(persons: Map<String, Person>, rootPersonID: String) {
         if (persons.isEmpty()) return
 
         val maternalSet = mutableSetOf<String>()
-        maternalSet.add(rootPersonID)
         val rootPerson: Person = persons[rootPersonID]!! // adds root user to this set
         rootPerson.motherID?.let {
             getAncestorHelper(it, persons, maternalSet)
         }
 
-        maternalAncestors.set(maternalSet)
+        maternalAncestors = maternalSet
     }
 
     private fun getAncestorHelper(personID: String, persons: Map<String, Person>, ancestorSet: MutableSet<String>) {
