@@ -22,7 +22,7 @@ import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import timber.log.Timber
 
 
-class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener, View.OnClickListener  {
 
     enum class EventColors(val color: Float) {
         BIRTH_COLOR(BitmapDescriptorFactory.HUE_GREEN),
@@ -40,6 +40,7 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
 
     private lateinit var mMap: GoogleMap
     private lateinit var menu: Menu
+    lateinit var selectedPersonID: String
     private val viewModel by sharedViewModel<MainViewModel>()
 
     override fun bind(): FragmentMapBinding {
@@ -48,6 +49,8 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.eventInfo.root.setOnClickListener(this)
         setHasOptionsMenu(true)
         binding.map.getFragment<SupportMapFragment>().getMapAsync(this)
     }
@@ -147,10 +150,23 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
     override fun onMarkerClick(marker: Marker): Boolean {
 
         val event: Event = marker.tag as Event
+        selectedPersonID = event.personID
         val person: Person? = viewModel.persons.value?.get(event.personID)
 
         setEventInfo(event, person)
 
         return true
+    }
+
+    override fun onClick(v: View?) {
+        when (v!!) {
+            binding.eventInfo.root -> {
+                try {
+                    findNavController().navigate(MapFragmentDirections.actionMapFragmentToPersonFragment(personID = selectedPersonID))
+                } catch (e: NullPointerException) {
+                    Timber.e(e, "ERROR: Failed to navigate to person fragment")
+                }
+            }
+        }
     }
 }

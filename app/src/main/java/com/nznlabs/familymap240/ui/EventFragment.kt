@@ -24,7 +24,7 @@ import timber.log.Timber
 import java.lang.Exception
 
 
-class EventFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+class EventFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener, View.OnClickListener{
 
 
     enum class EventColors(val color: Float) {
@@ -53,6 +53,8 @@ class EventFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Goo
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.eventInfo.root.setOnClickListener(this)
         binding.map.getFragment<SupportMapFragment>().getMapAsync(this)
     }
 
@@ -117,6 +119,7 @@ class EventFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Goo
     override fun onMarkerClick(marker: Marker): Boolean {
 
         val event: Event = marker.tag as Event
+        selectedEvent = event
         val person: Person? = viewModel.persons.value?.get(event.personID)
 
         val latLng = LatLng(event.latitude.toDouble(), event.longitude.toDouble())
@@ -125,5 +128,17 @@ class EventFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Goo
         setEventInfo(event, person)
 
         return true
+    }
+
+    override fun onClick(v: View?) {
+        when (v!!) {
+            binding.eventInfo.root -> {
+                try {
+                    findNavController().navigate(EventFragmentDirections.actionEventFragmentToPersonFragment(personID = selectedEvent.personID))
+                } catch (e: NullPointerException) {
+                    Timber.e(e, "ERROR: Failed to navigate to person fragment")
+                }
+            }
+        }
     }
 }
