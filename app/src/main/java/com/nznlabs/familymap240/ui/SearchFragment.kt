@@ -56,7 +56,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
     }
 
     private fun querySearch() {
-        val search: String = binding.searchBar.text.toString().lowercase()
+        val search: String = binding.searchBar.text.toString()
         if (search.isBlank()) {
             searchAdapter = SearchListAdapter(persons = listOf(), events = listOf(), this, listOf())
             binding.recView.adapter = searchAdapter
@@ -66,16 +66,16 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
         val eventsResult = mutableListOf<Event>()
         viewModel.persons.value?.let { persons ->
             for (person in persons) {
-                if ("${person.value.firstName} ${person.value.lastName}".lowercase().contains(search)) {
+                if ("${person.value.firstName} ${person.value.lastName}".contains(search, ignoreCase = true)) {
                     personsResult.add(person.value)
                 }
             }
         }
 
-        viewModel.events.value?.let {
-            val filteredEvents = filterEvents(it.values.toList())
-            for (event in filteredEvents) {
-                if ("${event.eventType} ${event.country} ${event.city} ${event.year}".lowercase().contains(search)) {
+        viewModel.events.value?.let { events ->
+            for (event in events.values) {
+                val person = viewModel.persons.value!!.values.find {it.personID == event.personID}
+                if ("${event.eventType} ${event.country} ${event.city} ${event.year} ${person?.firstName} ${person?.lastName}".contains(search, ignoreCase = true)) {
                     eventsResult.add(event)
                 }
             }
@@ -85,21 +85,10 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(), SearchListAdapter.
             persons = personsResult,
             events = eventsResult,
             this,
-            filteredFullPersonsList = viewModel.persons.value!!.values.toList()
+            fullPersonsList = viewModel.persons.value!!.values.toList()
         )
         binding.recView.adapter = searchAdapter
 
-    }
-
-    private fun filterEvents(events: List<Event>): List<Event> {
-        val filteredEvents = mutableListOf<Event>()
-        if (viewModel.settings.value!!.maleEvents) {
-            events.filterTo(filteredEvents) { viewModel.persons.value!![it.personID]!!.gender == "m" }
-        }
-        if (viewModel.settings.value!!.femaleEvents) {
-            events.filterTo(filteredEvents) { viewModel.persons.value!![it.personID]!!.gender == "f" }
-        }
-        return filteredEvents
     }
 
     override fun personSelected(position: Int, person: Person) {

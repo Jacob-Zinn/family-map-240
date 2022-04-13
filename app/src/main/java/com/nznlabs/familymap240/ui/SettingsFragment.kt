@@ -41,6 +41,8 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(),
         }
 
         viewModel.settings.observe(viewLifecycleOwner) {
+            viewModel.filterData()
+
             binding.lifeStoryLines.toggle.isChecked = it.showLifeStoryLines
             binding.treeLines.toggle.isChecked = it.showTreeLines
             binding.spouseLines.toggle.isChecked = it.showSpouseLines

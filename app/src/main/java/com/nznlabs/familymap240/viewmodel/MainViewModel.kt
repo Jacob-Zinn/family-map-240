@@ -3,7 +3,6 @@ package com.nznlabs.familymap240.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polyline
 import com.nznlabs.familymap240.model.Settings
 import com.nznlabs.familymap240.repository.ServerProxy
@@ -26,6 +25,12 @@ class MainViewModel : BaseViewModel() {
     private val sessionManager: SessionManager by inject()
     private val serverProxy: ServerProxy by inject()
 
+    var unfilteredPersons: Map<String,Person> = mapOf()
+    var unfilteredEvents:  Map<String, Event> = mapOf()
+    var unfilteredPersonEvents: Map<String, List<Event>> = mapOf()
+    var unfilteredPaternalAncestors: Set<String> = setOf()
+    var unfilteredMaternalAncestors: Set<String> = setOf()
+
     // Live data
     val persons: LiveData<MutableMap<String,Person>> = MutableLiveData()// personID
     val events: LiveData<MutableMap<String, Event>> = MutableLiveData() // personID
@@ -36,7 +41,6 @@ class MainViewModel : BaseViewModel() {
     val settings: LiveData<Settings> = MutableLiveData(Settings())
     val message: LiveData<String?> = MutableLiveData()
 
-
     fun login(loginRequest: LoginRequest) {
         viewModelScope.launch(Dispatchers.IO) {
             val loginResult: LoginResult = serverProxy.login(loginRequest)
@@ -44,6 +48,7 @@ class MainViewModel : BaseViewModel() {
                 val errorMessage = getUserData(loginResult.authtoken, loginResult.personID)
                 if (errorMessage == null) {
                     initAuthUser(loginResult.authtoken, loginResult.username, loginResult.personID)
+                    initUnfilteredData()
                     postMessage("Welcome ${sessionManager.rootPerson.firstName} ${sessionManager.rootPerson.lastName}")
                 } else {
                     postMessage(errorMessage)
@@ -61,6 +66,8 @@ class MainViewModel : BaseViewModel() {
                 val errorMessage = getUserData(registerResult.authtoken, registerResult.personID)
                 if (errorMessage == null) {
                     initAuthUser(registerResult.authtoken, registerResult.username, registerResult.personID)
+                    initUnfilteredData()
+                    postMessage("Welcome ${sessionManager.rootPerson.firstName} ${sessionManager.rootPerson.lastName}")
                 } else {
                     postMessage(errorMessage)
                 }
@@ -99,20 +106,19 @@ class MainViewModel : BaseViewModel() {
     private fun initUserData(personsResult: PersonsResult, eventsResult: EventsResult, rootPersonID: String) {
         val personMap = setPersons(personsResult.data.asList())
         setEvents(eventsResult.data.asList())
-        postPersonEvents(eventsResult.data.asList())
+        setPersonEvents(eventsResult.data.asList())
 
         this.persons.value?.let {
-            postPaternalAncestors(personMap, rootPersonID)
+            setPaternalAncestors(personMap, rootPersonID)
         }
         this.persons.value?.let {
-            postMaternalAncestors(personMap, rootPersonID)
+            setMaternalAncestors(personMap, rootPersonID)
         }
 
         sessionManager.rootPerson = personMap[rootPersonID]!!
     }
 
 
-    // SETTERS
     private fun initAuthUser(newAuthToken: String, newUsername: String, newPersonID: String) {
         sessionManager.authToken.postValue(newAuthToken)
         sessionManager.username = newUsername
@@ -125,8 +131,35 @@ class MainViewModel : BaseViewModel() {
         sessionManager.authToken.postValue(null)
     }
 
+    private fun initUnfilteredData() {
+        unfilteredPersons = persons.value!!
+        unfilteredEvents = events.value!!
+        unfilteredPersonEvents = personEvents.value!!
+        unfilteredPaternalAncestors = paternalAncestors.value!!
+        unfilteredMaternalAncestors = maternalAncestors.value!!
+    }
+
+    fun filterData() {
+        val settings = settings.value!!
+        val filteredEvents = filterEvents(unfilteredEvents, settings)
+        setEvents(filteredEvents)
+        setPersonEvents(filteredEvents)
+    }
+
+    private fun filterEvents(events: Map<String, Event>, settings: Settings): List<Event> {
+        val filteredEvents = mutableListOf<Event>()
+        if (settings.maleEvents) {
+            events.values.filterTo(filteredEvents) { persons.value!![it.personID]!!.gender == "m" }
+        }
+        if (settings.femaleEvents) {
+            events.values.filterTo(filteredEvents) { persons.value!![it.personID]!!.gender == "f" }
+        }
+        return filteredEvents
+    }
+
+    // SETTERS
     private fun setPersons(newPersons: List<Person>): Map<String, Person> {
-        val tmpPersons = persons.value?.toMutableMap() ?: mutableMapOf()
+        val tmpPersons = mutableMapOf<String, Person>()
         for (person in newPersons) {
             tmpPersons[person.personID] = person
         }
@@ -135,7 +168,7 @@ class MainViewModel : BaseViewModel() {
     }
 
     private fun setEvents(newEvents: List<Event>) {
-        val tmpEvents = events.value?.toMutableMap() ?: mutableMapOf()
+        val tmpEvents = mutableMapOf<String, Event>()
         for (event in newEvents) {
             tmpEvents[event.eventID] = event
         }
@@ -146,8 +179,8 @@ class MainViewModel : BaseViewModel() {
         settings.set(newSettings)
     }
 
-    private fun postPersonEvents(events: List<Event>) {
-        val tmp = personEvents.value?.toMutableMap() ?: mutableMapOf()
+    private fun setPersonEvents(events: List<Event>) {
+        val tmp = mutableMapOf<String, MutableList<Event>>()
         for (event in events) {
             if (tmp[event.personID] != null) {
                 tmp[event.personID]!!.add(event)
@@ -156,10 +189,10 @@ class MainViewModel : BaseViewModel() {
             }
         }
 
-        personEvents.postValue(tmp)
+        personEvents.set(tmp)
     }
 
-    private fun postPaternalAncestors(persons: Map<String,Person>, rootPersonID: String) {
+    private fun setPaternalAncestors(persons: Map<String,Person>, rootPersonID: String) {
         if (persons.isEmpty()) return
 
         val paternalSet = mutableSetOf<String>()
@@ -169,10 +202,10 @@ class MainViewModel : BaseViewModel() {
             getAncestorHelper(it, persons, paternalSet)
         }
 
-        paternalAncestors.postValue(paternalSet)
+        paternalAncestors.set(paternalSet)
     }
 
-    private fun postMaternalAncestors(persons: Map<String,Person>, rootPersonID: String) {
+    private fun setMaternalAncestors(persons: Map<String,Person>, rootPersonID: String) {
         if (persons.isEmpty()) return
 
         val maternalSet = mutableSetOf<String>()
@@ -182,7 +215,7 @@ class MainViewModel : BaseViewModel() {
             getAncestorHelper(it, persons, maternalSet)
         }
 
-        maternalAncestors.postValue(maternalSet)
+        maternalAncestors.set(maternalSet)
     }
 
     private fun getAncestorHelper(personID: String, persons: Map<String, Person>, ancestorSet: MutableSet<String>) {

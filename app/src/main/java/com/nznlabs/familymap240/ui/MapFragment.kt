@@ -65,9 +65,8 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
 
     private fun populateMap() {
         // EVENT TYPES: birth, death, marriage
-        viewModel.events.value?.let { it ->
-            val filteredEvents = filterEvents(it.values.toList())
-            for (eventItem in filteredEvents) {
+        viewModel.events.value?.let { events ->
+            for (eventItem in events.values) {
                 val color = when(eventItem.eventType) {
                     "birth" -> EventColors.BIRTH_COLOR.color
                     "death" -> EventColors.DEATH_COLOR.color
@@ -80,16 +79,6 @@ class MapFragment: BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Googl
         }
     }
 
-    private fun filterEvents(events: List<Event>): List<Event> {
-        val filteredEvents = mutableListOf<Event>()
-        if (viewModel.settings.value!!.maleEvents) {
-            events.filterTo(filteredEvents) { viewModel.persons.value!![it.personID]!!.gender == "m" }
-        }
-        if (viewModel.settings.value!!.femaleEvents) {
-            events.filterTo(filteredEvents) { viewModel.persons.value!![it.personID]!!.gender == "f" }
-        }
-        return filteredEvents
-    }
 
     private fun clearMap() {
         mMap.clear()
