@@ -6,6 +6,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.nznlabs.familymap240.adapter.PersonListAdapter
 import com.nznlabs.familymap240.databinding.FragmentPersonBinding
+import com.nznlabs.familymap240.util.SortingUtil
 import com.nznlabs.familymap240.viewmodel.MainViewModel
 import models.Event
 import models.Person
@@ -41,24 +42,11 @@ class PersonFragment : BaseFragment<FragmentPersonBinding>() , PersonListAdapter
 
     private fun initListView(rootPerson: Person, persons: MutableMap<String, Person>) {
         val events: List<Event> = viewModel.personEvents.value?.get(rootPerson.personID)?.toList() ?: mutableListOf()
-        val sortedEvents = sortEvents(events)
+        val sortedEvents = SortingUtil.sortEvents(events)
         val relatives = findRelatives(rootPerson, persons)
 
         personAdapter = PersonListAdapter(events = sortedEvents, relatives, rootPerson, interaction = this)
         binding.listView.setAdapter(personAdapter)
-    }
-
-    private fun sortEvents(events: List<Event>): List<Event> {
-
-        val birthEvents = events.filter { it.eventType == "birth" }
-        val otherEvents = events.filter {it.eventType != "birth" && it.eventType != "death"}.sortedBy { it.year }
-        val deathEvents = events.filter { it.eventType == "death" }
-
-        val sortedEvents = mutableListOf<Event>()
-        sortedEvents.addAll(birthEvents)
-        sortedEvents.addAll(otherEvents)
-        sortedEvents.addAll(deathEvents)
-        return sortedEvents
     }
 
     private fun findRelatives(rootPerson: Person, persons: MutableMap<String, Person>): List<Map<String, Person>> {

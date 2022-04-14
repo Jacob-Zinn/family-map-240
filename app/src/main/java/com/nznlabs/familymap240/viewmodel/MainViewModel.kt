@@ -31,6 +31,7 @@ class MainViewModel : BaseViewModel() {
     var paternalAncestors: Set<String> = setOf()
     var maternalAncestors: Set<String> = setOf()
     var lines: MutableList<Polyline> = mutableListOf()
+    var colorMap: MutableMap<String, Int> = mutableMapOf()
 
     // Live data
     val persons: LiveData<MutableMap<String, Person>> = MutableLiveData()// personID

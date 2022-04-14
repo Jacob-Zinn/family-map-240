@@ -17,6 +17,7 @@ import com.google.android.gms.maps.model.*
 import com.nznlabs.familymap240.R
 import com.nznlabs.familymap240.databinding.FragmentMapBinding
 import com.nznlabs.familymap240.model.Settings
+import com.nznlabs.familymap240.util.ColorUtil
 import com.nznlabs.familymap240.viewmodel.MainViewModel
 import models.Event
 import models.Person
@@ -27,19 +28,9 @@ import timber.log.Timber
 class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
     View.OnClickListener {
 
-    enum class EventColors(val color: Float) {
-        BIRTH_COLOR(BitmapDescriptorFactory.HUE_GREEN),
-        DEATH_COLOR(BitmapDescriptorFactory.HUE_VIOLET),
-        MARRIAGE_COLOR(BitmapDescriptorFactory.HUE_ROSE),
-        ERROR_COLOR(BitmapDescriptorFactory.HUE_ORANGE),
-    }
 
-    enum class LineColors(val color: Int) {
-        SPOUSE(Color.MAGENTA),
-        TREE(Color.BLUE),
-        LIFE_STORY(Color.YELLOW),
-        ERROR_COLOR(Color.BLACK)
-    }
+
+
 
     private lateinit var mMap: GoogleMap
     private lateinit var menu: Menu
@@ -86,14 +77,16 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Goog
     private fun populateMap() {
         // EVENT TYPES: birth, death, marriage
         viewModel.events.value?.let { events ->
+            val  tmpEventTypeSet = mutableSetOf<String>()
             for (eventItem in events.values) {
-                val color = when (eventItem.eventType) {
-                    "birth" -> EventColors.BIRTH_COLOR.color
-                    "death" -> EventColors.DEATH_COLOR.color
-                    "marriage" -> EventColors.MARRIAGE_COLOR.color
-                    else -> EventColors.ERROR_COLOR.color
-                }
-                addMarker(eventItem, color)
+                tmpEventTypeSet.add(eventItem.eventType)
+            }
+            for ((i, type) in tmpEventTypeSet.withIndex()) {
+                viewModel.colorMap[type] = i
+            }
+
+            for (eventItem in events.values) {
+                addMarker(eventItem, ColorUtil.selectColor(viewModel.colorMap[eventItem.eventType]!!))
             }
 
             viewModel.selectedEvent.value?.let {
@@ -135,7 +128,7 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Goog
             if (!spouseEvents.isNullOrEmpty()) {
                 val spouseEvent =
                     spouseEvents.find { it.eventType == "birth" } ?: spouseEvents.minByOrNull { it.year }!!
-                drawLine(selectedEvent, spouseEvent, LineColors.SPOUSE.color, 12f)
+                drawLine(selectedEvent, spouseEvent, ColorUtil.LineColors.SPOUSE.color, 12f)
             }
         }
 
@@ -144,14 +137,14 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Goog
             val fatherEvents = events.filter { it.personID == associatedPerson?.fatherID }
             if (!fatherEvents.isNullOrEmpty()) {
                 val fatherEvent = fatherEvents.find { it.eventType == "birth" } ?: fatherEvents.minByOrNull { it.year }!!
-                drawLine(selectedEvent, fatherEvent, LineColors.TREE.color, 14f)
+                drawLine(selectedEvent, fatherEvent, ColorUtil.LineColors.TREE.color, 14f)
                 drawAncestorLines(associatedPerson!!.fatherID, fatherEvent, events, persons, 2)
             }
 
             val motherEvents = events.filter { it.personID == associatedPerson?.motherID }
             if (!motherEvents.isNullOrEmpty()) {
                 val motherEvent = motherEvents.find { it.eventType == "birth" } ?: motherEvents.minByOrNull { it.year }!!
-                drawLine(selectedEvent, motherEvent, LineColors.TREE.color, 14f)
+                drawLine(selectedEvent, motherEvent, ColorUtil.LineColors.TREE.color, 14f)
                 drawAncestorLines(associatedPerson!!.motherID, motherEvent, events, persons, 2)
             }
         }
@@ -164,14 +157,14 @@ class MapFragment : BaseFragment<FragmentMapBinding>(), OnMapReadyCallback, Goog
         val fatherEvents = events.filter { it.personID == currentPerson?.fatherID }
         if (!fatherEvents.isNullOrEmpty()) {
             val fatherEvent = fatherEvents.find { it.eventType == "birth" } ?: fatherEvents.minByOrNull { it.year }!!
-            drawLine(currentEvent, fatherEvent, LineColors.TREE.color, 14f/ generationCount)
+            drawLine(currentEvent, fatherEvent, ColorUtil.LineColors.TREE.color, 14f/ generationCount)
             drawAncestorLines(currentPerson!!.fatherID, fatherEvent, events, persons, generationCount + 1)
         }
 
         val motherEvents = events.filter { it.personID == currentPerson?.motherID }
         if (!motherEvents.isNullOrEmpty()) {
             val motherEvent = motherEvents.find { it.eventType == "birth" } ?: motherEvents.minByOrNull { it.year }!!
-            drawLine(currentEvent, motherEvent, LineColors.TREE.color, 14f/ generationCount)
+            drawLine(currentEvent, motherEvent, ColorUtil.LineColors.TREE.color, 14f/ generationCount)
             drawAncestorLines(currentPerson!!.motherID, motherEvent, events, persons, generationCount + 1)
         }
     }

@@ -39,12 +39,11 @@ class AuthFragment : BaseFragment<FragmentAuthBinding>(),
         initListeners()
         subscribeObservers()
     }
-//
-//    private fun deleteLoginTest() {
-//        initHTTPConnectionParams()
-//        viewModel.login(LoginRequest("JacobZinn", "FamilyMapPass"))
-//    }
 
+    private fun deleteLoginTest() {
+        initHTTPConnectionParams()
+        viewModel.login(LoginRequest("sheila", "parker"))
+    }
 
     @SuppressLint("SetTextI18n")
     private fun initFakeInput() {
